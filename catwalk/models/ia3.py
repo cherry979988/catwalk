@@ -18,14 +18,15 @@ class DecoderOnlyIA3Mixin:
         *,
         override_weights_file: str = None,
         ia3_weights_file: str = None,
+        ia3_state_dict: dict = None,
         **kwargs
     ) -> GPT2LMHeadModel:
         model = cached_transformers.get(AutoModelForCausalLM, pretrained_model_name_or_path, True, override_weights_file=override_weights_file)
         isinstance(model, GPT2LMHeadModel)
         config = IA3ForGPT2Config()
         model = modify_with_ia3(model, config)
-        state_dict = torch.load(ia3_weights_file)
-        model.load_state_dict(state_dict, strict=False)
+        if ia3_state_dict is not None:
+            model.load_state_dict(ia3_state_dict, strict=False)
         return model
 
 
@@ -41,6 +42,7 @@ class IA3MetaICLModel(DecoderOnlyIA3Mixin, MetaICLModel):
         continuation_seperator: str = '\n',
         example_seperator: str = '\n\n\n',
         ia3_weights_file: str = None,
+        ia3_state_dict: dict = None,
         **model_kwargs
     ):
         super().__init__(
@@ -52,9 +54,11 @@ class IA3MetaICLModel(DecoderOnlyIA3Mixin, MetaICLModel):
             continuation_seperator=continuation_seperator,
             example_seperator=example_seperator,
             ia3_weights_file=ia3_weights_file,
+            ia3_state_dict=ia3_state_dict,
             **model_kwargs
         )
-        assert ia3_weights_file is not None
+        # assert ia3_state_dict is not None
+        # assert ia3_weights_file is not None
 
 
 #### Code from allenai/hn-icl by Qinyuan Yu, used with permission ####
